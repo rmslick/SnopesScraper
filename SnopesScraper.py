@@ -13,13 +13,13 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
 from kivy.uix.dropdown import DropDown
 from kivy.uix.textinput import TextInput
-class BoxLayoutApp(App):
+class SnopesScraper(App):
 	def __init__(self):
 		App.__init__(self)
 		self.selections = set([]) 
 		self.scrapeInSession = False
 		self.dirPath = ""
-		self.dirInput = TextInput(multiline=False)
+		self.dirInput = TextInput(multiline=False,cursor_blink=True,hint_text="Enter filepath...")
 	'''
 		Can programatically acquire.
 		Some will not work.
@@ -164,7 +164,7 @@ class BoxLayoutApp(App):
 		layout.add_widget(Button(text="Scrape!",on_press=self.StartScrape))
 		return layout
 
-root = BoxLayoutApp()
+root = SnopesScraper()
 
 
 root.run()
