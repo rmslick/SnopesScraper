@@ -11,7 +11,7 @@ SnopesScraper is a python web scraping tool to extract archived snopes [articles
 ## Usage Notes
 
 1. This program is a prototype. The selection of possible categories is hardcoded. The full list can be obtained programatically upon start up if desired.
-2. The program will obtain every default page assosciated with every selected category. If desired, an option to specify total number of docs (not to exceed total docs in category on snopes) can be specified.
+2. The program will obtain every page assosciated with every selected category. If desired, an option to specify total number of docs (not to exceed total docs in category on snopes) can be specified.
 3. The truth values are hard coded to true/false for testing purposes. Thus if an article has a 'mostly true' rating, for example, it will not be scraped. Adding in the remaining snopes truth values is trivial. 
 
 ![alt text](rmpic.png)
