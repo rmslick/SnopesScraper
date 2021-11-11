@@ -38,93 +38,14 @@ class BoxLayoutApp(App):
 		while articleIndex < totalDocs:
 
 			articleIndex += 1
-	def StartScrapeTrue(self):
-		
-		if not self.scrapeInSession:
-			print('Starting scrape true...')
-			self.scrapeInSession = True
-			# scrape for each category
-			for category in self.selections:
-				# get all documents that are true for each category
-				pageNumIndex = 1
-				articleIndex = 1
-				articleDict = {}
-				# read all pages in category
-				while(True):
 
-					url = "https://www.snopes.com/fact-check/category/"+category+"/page/"+str(pageNumIndex)+"/"
-					req = requests.get(url)
-					soup = BeautifulSoup(req.text, "html.parser")
-					
-					print("[INFO] Scraping ",category," page ",pageNumIndex,'...')
-					#print("Total articles: ",len(soup.find_all('article')))
-					if len(soup.find_all('article')) == 0:
-						print("[INFO] Finished scraping category:",category)
-						break
-					for tag in soup.find_all('article'):
-						articleURL = ""
-						for anchor in tag.find_all('a', {'class' :'stretched-link'}):
-							# collect only if false
-							articleURL = anchor['href']
-						spans = tag.find_all('span', {'class' : 'small font-weight-bold rating-label-true'},recursive=True)
-						if len(spans) >0:
-							print('[INFO] Article: ',articleURL," is true.")
-							page = requests.get(articleURL)
-							soupPage = BeautifulSoup(page.content, 'html.parser')
-							articleDict[articleIndex] = {}
-							articleDict[articleIndex]["url"] = articleURL
-							# Get title
-							title = soupPage.find_all('h1',{'class':'title'},recursive=True)
-							#print(len(title))
-							for t in title:
-								articleDict[articleIndex]["title"] = str(t.text.strip('\n'))
-							# Get subtitle
-							subTitle = soupPage.find_all('h2',{'class':'subtitle'},recursive=True)
-							for t in subTitle:
-								articleDict[articleIndex]["subtitle"] = str(t.text.strip('\n'))
-			                # Get Author
-							authors = soupPage.find_all('ul',{'class':'list-unstyled authors list-unstyled d-flex flex-wrap comma-separated'},recursive=True)
-							articleDict[articleIndex]["authors"] = []
-							for auth in authors:
-								for a in auth.find_all('a',recursive=True):
-									articleDict[articleIndex]["authors"].append(a.text)
-		                	# Get Date
-							publishedDate = soupPage.find_all('time',recursive=True)
-							articleDict[articleIndex]["publish-date"] = set([])
-							for dates in publishedDate:
-								articleDict[articleIndex]["publish-date"].add(dates.text)
-							articleDict[articleIndex]["publish-date"] = list(articleDict[articleIndex]["publish-date"])
-							# Get feature figure
-							articleDict[articleIndex]["main-figure"] = ""
-							mainFigure = soupPage.find_all('img',{'class':"figure-image embed-responsive-item object-fit-cover"},recursive=True)
-							for image in mainFigure:
-								articleDict[articleIndex]["main-figure"] = image['src']
-								break
-							# Get claim
-							articleDict[articleIndex]["claim"] = ""
-							claimTag = soupPage.find_all('div',{'class':"claim-text card-body"},recursive=True)            
-							
-							for c in claimTag:
-								articleDict[articleIndex]["claim"] += c.text
-		                	# Get body
-							article_text = ''
-							article = soupPage.find("div", {"class":"single-body card card-body rich-text"}).findAll(['p','blockquote'])
-							for element in article:
-								article_text += '\n' + ''.join(element.findAll(text = True))
-							articleDict[articleIndex]["fullArticle"] = article_text
-							articleIndex += 1
-					pageNumIndex += 1
-				# Save off entire category of true documents
-				truthPath = self.dirPath+"/"+category+"_true.json"
-				print('Category',category, " written to ", truthPath)
-				with open(truthPath, "w") as outfile:
-					json.dump(articleDict, outfile)
-			# end scrape	
-			self.scrapeInSession = False
-			# write out data
-			
-	def StartScrapeFalse(self):
-		
+	'''
+		truthVal- 
+				0 - false
+				1 - true
+	'''
+	def Scrape(self,truthVal):
+		rating = ""
 		if not self.scrapeInSession:
 			print('Starting scrape false...')
 			self.scrapeInSession = True
@@ -151,9 +72,17 @@ class BoxLayoutApp(App):
 						for anchor in tag.find_all('a', {'class' :'stretched-link'}):
 							# collect only if false
 							articleURL = anchor['href']
-						spans = tag.find_all('span', {'class' : 'small font-weight-bold rating-label-false'},recursive=True)
+						# scrape false values
+						spans = None
+						# check for the truth categories here
+						if truthVal == 0:
+							spans = tag.find_all('span', {'class' : 'small font-weight-bold rating-label-false'},recursive=True)
+							rating = "false"
+						elif truthVal == 1:
+							spans = tag.find_all('span', {'class' : 'small font-weight-bold rating-label-true'},recursive=True)
+							rating = "true"
 						if len(spans) >0:
-							print('[INFO] Article: ',articleURL," is true.")
+							print('[INFO] Article: ',articleURL," is "+rating+".")
 							page = requests.get(articleURL)
 							soupPage = BeautifulSoup(page.content, 'html.parser')
 							articleDict[articleIndex] = {}
@@ -200,7 +129,7 @@ class BoxLayoutApp(App):
 							articleIndex += 1
 					pageNumIndex += 1
 				# Save off entire category of true documents
-				truthPath = self.dirPath+"/"+category+"_false.json"
+				truthPath = self.dirPath+"/"+category+"_"+rating+".json"
 				print('Category',category, " written to ", truthPath)
 				with open(truthPath, "w") as outfile:
 					json.dump(articleDict, outfile)
@@ -214,8 +143,8 @@ class BoxLayoutApp(App):
 			self.dirPath = self.dirPath[0:len(self.dirPath)-1]
 			print('Trimmed to: ', self.dirPath) 
 		print('Dirpath:',self.dirPath)
-		self.StartScrapeTrue()
-		self.StartScrapeFalse()
+		self.Scrape(0)
+		self.Scrape(1)
 	def build(self):
 		
 		layout = GridLayout(cols = 1)
