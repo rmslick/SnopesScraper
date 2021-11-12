@@ -1,6 +1,6 @@
 # SnopesScraper
 
-SnopesScraper is a python web scraping tool to extract archived snopes [articles by category](https://www.snopes.com/sitemap/). For each category, every [truth value](https://www.snopes.com/fact-check-ratings/) will get its own json file, Format of the json file is [category]_[truthvalue].json. See science_true.json and science_false.json for examples.
+SnopesScraper is a python web scraping tool to extract archived snopes [articles by category](https://www.snopes.com/sitemap/). For each category, every [truth value](https://www.snopes.com/fact-check-ratings/) will get its own json file, Format of the json file is [ category ]_[ truthvalue ].json. See science_true.json and science_false.json for examples.
 
 ## Usage
 
